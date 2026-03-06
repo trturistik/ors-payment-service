@@ -11,15 +11,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to Server
+      - name: Write env files and deploy
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
+          envs: ENV_FILE,NPMRC_FILE
           script: |
+            echo "$ENV_FILE" > /var/www/orslab/.env
+            echo "$NPMRC_FILE" > /var/www/orslab/.npmrc
             cd /var/www/orslab/ors-payment-service
             git pull origin main
             npm install --production
             pm2 restart ors-payment
             echo "Deploy completed: $(date)"
+        env:
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+          NPMRC_FILE: ${{ secrets.NPMRC_FILE }}
